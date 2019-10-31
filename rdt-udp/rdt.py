@@ -22,7 +22,7 @@ def send_recursive(udp, msg, dest, attempts):
     while not (sender == dest and msg == 'ACK'): msg, sender = udp.recvfrom(1024)    
   except socket.timeout:
     print "Timeout! Tentando reenviar... Tentativas restates:", (attempts - 1)
-    send(udp, msg, dest, attempts - 1)
+    send_recursive(udp, msg, dest, attempts - 1)
 
   udp.settimeout(None)
 
