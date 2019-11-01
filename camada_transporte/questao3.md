@@ -105,6 +105,6 @@ TCP window size: 2.50 MByte (default)
 [SUM]  0.0-10.0 sec  43.3 GBytes  37.2 Gbits/sec
 ```
 
-Aqui houve uma separação da transferência em **P** partições, onde P é o número especificado na flag P. O desempenho final é semelhante a execução do iperf sem nenhuma flag, mas o recurso largura de banda é dividido de forma a cada uma das P partições ter 1/P da largura de banda.
+Aqui houve uma divisão da transferência em **P** clientes rodando em paralelo (threads), onde P é o número especificado na flag P. O desempenho final é semelhante a execução do iperf sem nenhuma flag, mas o recurso largura de banda é dividido de forma a cada uma das P partições ter aproximadamente 1/P da largura de banda.
 
 No final, a soma da quantidade transferida e também a largura de banda é semelhante à execução `iperf -c 127.0.0.1`
