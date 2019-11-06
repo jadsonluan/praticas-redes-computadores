@@ -4,37 +4,171 @@ O IPERF é uma ferramenta que é muito utilizada para realizar a avaliação de 
 Servidor: `iperf -s`
 Cliente: `iperf -c 127.0.0.1`
 
-### Usando flag -w
+### Modificando a janela (flag w)
 
-Valor da flag | Interval | Transfer | Bandwith        | Window size
---------------|----------|----------|-----------------|-------------
-none          | 0-10 sec | 50.1 GB  | 41.6 Gbits/sec  | 2.5 MB
-1             | 0-10 sec | 15.8 MB  | 13.1 Mbits/sec  | 4.5 KB
-2000          | 0-10 sec | 16.1 MB  | 13.5 Mbits/sec  | 4.5 KB
-10000         | 0-10 sec | 18.5 MB  | 15.4 Mbits/sec  | 19.5 KB
-50000         | 0-10 sec | 13.7 GB  | 11.7 Gbits/sec  | 97.7 KB
-100000        | 0-10 sec | 39.6 GB  | 34.0 Gbits/sec  | 195 KB
+```bash
+$ iperf -c 127.0.0.1
 
-Podemos ver que quando chamamos, no cliente, `iperf -c 127.0.0.1` a janela do TCP é a default (2.5MB), dessa forma há uma transferência de 50.1 GB pois a janela é grande. 
+------------------------------------------------------------
+Client connecting to 127.0.0.1, TCP port 5001
+TCP window size: 2.50 MByte (default)
+------------------------------------------------------------
+[  3] local 127.0.0.1 port 37734 connected with 127.0.0.1 port 5001
+[ ID] Interval       Transfer     Bandwidth
+[  3]  0.0-10.0 sec  44.2 GBytes  38.0 Gbits/sec
+```
 
-Quando usamos a flag -w 1 (janela com 1 byte), o iperf determina que a janela será 4.5KB, um valor arredondado para cima, e o valor transferido diminui pois a janela diminuiu de 2.5MB para 4.5KB. O mesmo acontece para a flag -w 2000 pois o iperf também arredondou para 4.5KB
+```bash
+$ iperf -c 127.0.0.1 -w 1
 
-O mesmo ocorre para os outros valores de flag. Um valor é requisitado, mas o iperf utiliza um diferente (geralmente arredondado bastante para cima). Quanto maior a janela usada, maior a largura de banda e consequentemente o valor final transferido (Transfer). 
+WARNING: TCP window size set to 1 bytes. A small window size
+will give poor performance. See the Iperf documentation.
+------------------------------------------------------------
+Client connecting to 127.0.0.1, TCP port 5001
+TCP window size: 4.50 KByte (WARNING: requested 1.00 Byte)
+------------------------------------------------------------
+[  3] local 127.0.0.1 port 37746 connected with 127.0.0.1 port 5001
+[ ID] Interval       Transfer     Bandwidth
+[  3]  0.0-10.0 sec  16.2 MBytes  13.6 Mbits/sec
+``` 
 
-### Usando flag -M
+```bash
+$ iperf -c 127.0.0.1 -w 2000
 
-Valor da flag | Interval | Transfer | Bandwith        | MSS
---------------|----------|----------|-----------------|------
-none          | 0-10 sec | 50.1 GB  | 41.6 Gbits/sec  | default
-100           | 0-10 sec | 38.1 GB  | 32.8 Gbits/sec  | 536
-250           | 0-10 sec | 37.6 GB  | 32.3 Gbits/sec  | 536
-500           | 0-10 sec | 37.4 GB  | 32.1 Gbits/sec  | 536
-1000          | 0-10 sec | 37.2 GB  | 30.0 Gbits/sec  | 536
-1500          | 0-10 sec | 38.7 GB  | 33.2 Gbits/sec  | 536
+WARNING: TCP window size set to 2000 bytes. A small window size
+will give poor performance. See the Iperf documentation.
+------------------------------------------------------------
+Client connecting to 127.0.0.1, TCP port 5001
+TCP window size: 4.50 KByte (WARNING: requested 1.95 KByte)
+------------------------------------------------------------
+[  3] local 127.0.0.1 port 37748 connected with 127.0.0.1 port 5001
+[ ID] Interval       Transfer     Bandwidth
+[  3]  0.0-10.1 sec  16.6 MBytes  13.9 Mbits/sec
+```
 
+```bash
+$ iperf -c 127.0.0.1 -w 10000
+
+------------------------------------------------------------
+Client connecting to 127.0.0.1, TCP port 5001
+TCP window size: 19.5 KByte (WARNING: requested 9.77 KByte)
+------------------------------------------------------------
+[  3] local 127.0.0.1 port 37750 connected with 127.0.0.1 port 5001
+[ ID] Interval       Transfer     Bandwidth
+[  3]  0.0-10.0 sec  17.0 MBytes  14.2 Mbits/sec
+```
+
+```bash
+$ iperf -c 127.0.0.1 -w 50000
+------------------------------------------------------------
+Client connecting to 127.0.0.1, TCP port 5001
+TCP window size: 97.7 KByte (WARNING: requested 48.8 KByte)
+------------------------------------------------------------
+[  3] local 127.0.0.1 port 37752 connected with 127.0.0.1 port 5001
+[ ID] Interval       Transfer     Bandwidth
+[  3]  0.0-10.0 sec  15.5 GBytes  13.3 Gbits/sec
+```
+
+```bash
+$ iperf -c 127.0.0.1 -w 100000
+
+------------------------------------------------------------
+Client connecting to 127.0.0.1, TCP port 5001
+TCP window size:  195 KByte (WARNING: requested 97.7 KByte)
+------------------------------------------------------------
+[  3] local 127.0.0.1 port 37756 connected with 127.0.0.1 port 5001
+[ ID] Interval       Transfer     Bandwidth
+[  3]  0.0-10.0 sec  53.5 GBytes  46.0 Gbits/sec
+```
+
+Ao adicionar a flag w à uma chamada do iperf, ele realiza uma **tentativa** de fixar a janela no valor passado como argumento. Podemos ver isso mais claramente quando usamos o valor 1 e 2000, ambos valores abaixo do permitido pelo iperf, que a ferramenta determina que se valores muito baixos forem escolhidos, um valor padrão será usado que nesse no caso foi 4.5 KB.
+
+Podemos ver que quando chamamos, no cliente, `iperf -c 127.0.0.1` a janela do TCP é a default (2.5MB), dessa forma há uma transferência de aproximadamente 44 GB pois a janela é grande. 
+
+Quando usamos a flag -w 1 (buffer de 1 byte), o iperf determina que a janela será 4.5KB, como explicado anteriormente. O valor transferido diminui pois a janela diminuiu de 2.5MB para 4.5KB. O mesmo acontece para a flag -w 2000 pois o iperf também determinou a janela para 4.5 KB.
+
+Algo parecido ocorre para os outros valores de flag. Um valor é requisitado, mas o iperf utiliza um diferente (geralmente maior). 
+
+**Conclusão** :tada:
+Quanto maior a janela usada, maior a largura de banda e consequentemente o valor final transferido (Transfer). 
+
+### Modificando o MSS (flag M)
+
+```bash
+$ iperf -c 127.0.0.1
+------------------------------------------------------------
+Client connecting to 127.0.0.1, TCP port 5001
+TCP window size: 2.50 MByte (default)
+------------------------------------------------------------
+[  3] local 127.0.0.1 port 37862 connected with 127.0.0.1 port 5001
+[ ID] Interval       Transfer     Bandwidth
+[  3]  0.0-10.0 sec  44.9 GBytes  38.6 Gbits/sec
+```
+
+```bash
+$ iperf -c 127.0.0.1 -M 100
+WARNING: attempt to set TCP maximum segment size to 100, but got 536
+------------------------------------------------------------
+Client connecting to 127.0.0.1, TCP port 5001
+TCP window size: 25.0 KByte (default)
+------------------------------------------------------------
+[  3] local 127.0.0.1 port 37864 connected with 127.0.0.1 port 5001
+[ ID] Interval       Transfer     Bandwidth
+[  3]  0.0-10.0 sec  48.8 GBytes  41.9 Gbits/sec
+```
+
+```bash
+$ iperf -c 127.0.0.1 -M 250
+WARNING: attempt to set TCP maximum segment size to 250, but got 536
+------------------------------------------------------------
+Client connecting to 127.0.0.1, TCP port 5001
+TCP window size: 25.0 KByte (default)
+------------------------------------------------------------
+[  3] local 127.0.0.1 port 37866 connected with 127.0.0.1 port 5001
+[ ID] Interval       Transfer     Bandwidth
+[  3]  0.0-10.0 sec  48.7 GBytes  41.8 Gbits/sec
+```
+
+```bash
+$ iperf -c 127.0.0.1 -M 500
+WARNING: attempt to set TCP maximum segment size to 500, but got 536
+------------------------------------------------------------
+Client connecting to 127.0.0.1, TCP port 5001
+TCP window size: 45.0 KByte (default)
+------------------------------------------------------------
+[  3] local 127.0.0.1 port 37868 connected with 127.0.0.1 port 5001
+[ ID] Interval       Transfer     Bandwidth
+[  3]  0.0-10.0 sec  45.3 GBytes  38.9 Gbits/sec
+```
+
+```bash
+$ iperf -c 127.0.0.1 -M 1000
+WARNING: attempt to set TCP maximum segment size to 1000, but got 536
+------------------------------------------------------------
+Client connecting to 127.0.0.1, TCP port 5001
+TCP window size: 45.0 KByte (default)
+------------------------------------------------------------
+[  3] local 127.0.0.1 port 37872 connected with 127.0.0.1 port 5001
+[ ID] Interval       Transfer     Bandwidth
+[  3]  0.0-10.0 sec  47.2 GBytes  40.5 Gbits/sec
+```
+
+```bash
+$ iperf -c 127.0.0.1 -M 1500
+WARNING: attempt to set TCP maximum segment size to 1500, but got 536
+------------------------------------------------------------
+Client connecting to 127.0.0.1, TCP port 5001
+TCP window size: 85.0 KByte (default)
+------------------------------------------------------------
+[  3] local 127.0.0.1 port 37874 connected with 127.0.0.1 port 5001
+[ ID] Interval       Transfer     Bandwidth
+[  3]  0.0-10.0 sec  49.4 GBytes  42.4 Gbits/sec
+```
+
+**Conclusão** :tada:
 Aqui apesar das tentativas de determinar o MSS, o iperf o colocou em 536 o que parece ser um tipo de valor padrão. Devido ao MSS não ter sido alterado, não houve diferença muito significante na largura de banda.
 
-### Usando a flag P
+### Modificando o número de  (flag P)
 ```bash
 $ iperf -c 127.0.0.1 -P 1
 
@@ -105,6 +239,9 @@ TCP window size: 2.50 MByte (default)
 [SUM]  0.0-10.0 sec  43.3 GBytes  37.2 Gbits/sec
 ```
 
-Aqui houve uma separação da transferência em **P** partições, onde P é o número especificado na flag P. O desempenho final é semelhante a execução do iperf sem nenhuma flag, mas o recurso largura de banda é dividido de forma a cada uma das P partições ter 1/P da largura de banda.
+**Conclusão** :tada:
+O dado transferido é dividido e enviado paralelamente em **n** partes, onde **n** é o argumento usado na flag -P
 
-No final, a soma da quantidade transferida e também a largura de banda é semelhante à execução `iperf -c 127.0.0.1`
+Tanto a largura de banda quanto o valor transferido de cada *thread* usada para enviar o dado é uma fração dos valores utilizados em um envio não-paralelo. Para notar isso, basta comparar qualquer uma exceção que usou a flag P com a execução sem a flag P e notar as semelhanças.
+
+No final, o valor transferido somado é semelhante à execução `iperf -c 127.0.0.1`, pois o que ocorreu foi apenas o envio do mesmo dado só que fragmentado de forma a ser enviado em um número determinado de fluxos paralelos.
